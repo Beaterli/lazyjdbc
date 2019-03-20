@@ -40,16 +40,17 @@ open class MapJdbcClient(
 
         val connection = getConnection()
         val statement = connection.createStatement()
+        val wrappedTable = wrap(tableName)
         try {
             statement.fetchSize = 1
-            val resultSet = statement.executeQuery("select * from  $wrapper$tableName$wrapper")
+            val resultSet = statement.executeQuery("select * from  $wrappedTable")
             with(resultSet.metaData) {
                 for (i in 1..columnCount) {
                     columnTypeMap[getColumnName(i)] = getColumnType(i)
                 }
             }
         } catch (e: SQLException) {
-            throw RuntimeException("failed to read column types", e)
+            throw RuntimeException("failed to read column types for table: $wrappedTable", e)
         } finally {
             statement.close()
             closeConnection(connection)
